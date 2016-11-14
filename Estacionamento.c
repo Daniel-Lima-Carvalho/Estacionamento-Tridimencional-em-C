@@ -88,8 +88,10 @@ void copiar_rotativo(int andar,int coluna, int vaga,Tcadastro cadastro[][10][8],
 	cadastro[andar][coluna][vaga].minuto = minuto;
 }
 
-void ler_arquivo(FILE *arq,Tcadastro cadastro[][10][8])
+void ler_arquivo(char nome_arq[20],Tcadastro cadastro[][10][8])
 {
+	FILE *arq = fopen(nome_arq,"r");
+	
 	int i,j,k;
 
 	for(i=0;i<10;i++)
@@ -109,6 +111,8 @@ void ler_arquivo(FILE *arq,Tcadastro cadastro[][10][8])
 			}
 		}
 	}
+	
+	fclose(arq);
 }
 
 
@@ -189,9 +193,11 @@ int buscar_rotativo(char placa[],Tcadastro cadastro[][10][8],int *andar,int *col
 	
 }
 
-void escrever(Tcadastro cadastro[][10][8], FILE *arq) // Escreve todas as informações da matriz no arquivo.
+void escrever(Tcadastro cadastro[][10][8], char nome_arq[20]) // Escreve todas as informações da matriz no arquivo.
 {
 	int i,j,k;
+
+	FILE *arq = fopen(nome_arq,"w");
 
 	for(i=0;i<10;i++)
 	{
@@ -210,7 +216,9 @@ void escrever(Tcadastro cadastro[][10][8], FILE *arq) // Escreve todas as inform
 			}
 		}
 	}
-
+	
+	fclose(arq);
+	
 }
 
 void apresentacao()
@@ -316,10 +324,7 @@ int main() {
 	char placa[15];
 	double tel;
 
-
-	FILE *arq = fopen("cadastro.txt","r");
-
-	ler_arquivo(arq,cadastro);
+	ler_arquivo("cadastro.txt",cadastro);
 	
 	apresentacao();
 
@@ -511,13 +516,9 @@ int main() {
 		printf("\n 	(1)ENTRADA (2)SAIDA (3)FINALIZAR: ");
 		scanf("%i",&opcao);
 	}
-
-	fclose(arq);	
-
+	
 	//escrever no arquivo
-	arq = fopen("cadastro.txt","w");
-	escrever(cadastro,arq);
-	fclose(arq);
+	escrever(cadastro,"cadastro.txt");
 	
 	printf("\n\n	");
 	system("pause");

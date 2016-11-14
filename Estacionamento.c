@@ -4,6 +4,8 @@
 #include <string.h>
 
 /* run this program using the console pauser or add your own getch, system("pause") or input loop */
+struct tm *DataAtual; //estrutura para armazenar data e hora.
+time_t Segundos;
 typedef struct
 {
 	char placa[15];
@@ -15,6 +17,40 @@ typedef struct
 	double telefone;	
 	
 }Tcadastro;
+
+int ObtemDia(dia)
+{
+    time(&Segundos); //obtém a hora em segundos.
+    DataAtual = localtime(&Segundos); //converte horas em segundos.
+    return(DataAtual->tm_mday); //retorna os dias de 1 a 31.
+}
+
+int ObtemMes(mes)
+{
+    time(&Segundos); //obtém a hora em segundos.
+    DataAtual = localtime(&Segundos); //converte horas em segundos.
+    return(DataAtual->tm_mon+1); //retorna os meses de 0 a 11.
+}
+
+int ObtemAno(ano)
+{
+    time(&Segundos); //obtém a hora em segundos.
+    DataAtual = localtime(&Segundos); //converte horas em segundos.
+    return(DataAtual->tm_year+1900); //retorna o ano atual.
+}
+
+int ObtemHora(hora)
+{
+    time(&Segundos); //obtém a hora em segundos.
+    DataAtual = localtime(&Segundos); //converte horas em segundos.
+    return(DataAtual->tm_hour); //retorna as horas de 0 a 24.
+}
+int ObtemMinuto(minuto)
+{
+    time(&Segundos); //obtém a hora em segundos.
+    DataAtual = localtime(&Segundos); //converte horas em segundos.
+    return(DataAtual->tm_min); //retorna os minutos de 0 a 59.
+}
 
 
 void remover(Tcadastro cadastro[][10][8],int andar,int coluna,int vaga)
@@ -52,8 +88,10 @@ void copiar_rotativo(int andar,int coluna, int vaga,Tcadastro cadastro[][10][8],
 	cadastro[andar][coluna][vaga].minuto = minuto;
 }
 
-void ler_arquivo(FILE *arq,Tcadastro cadastro[][10][8])
+void ler_arquivo(char nome_arq[20],Tcadastro cadastro[][10][8])
 {
+	FILE *arq = fopen(nome_arq,"r");
+	
 	int i,j,k;
 
 	for(i=0;i<10;i++)
@@ -73,6 +111,8 @@ void ler_arquivo(FILE *arq,Tcadastro cadastro[][10][8])
 			}
 		}
 	}
+	
+	fclose(arq);
 }
 
 
@@ -80,13 +120,13 @@ int buscar_mensalista(char placa[],Tcadastro cadastro[][10][8],int *andar,int *c
 {
 	int i,j,k; 
 	
-	for(i=0;i<4;i++)
+	for(i=0;i<4;i++) // Se achar a placa retorna o zero e os indices da vaga do carro.
 	{
 		for(j=0;j<10;j++)
 		{
 		 	for(k=0;k<8;k++)
 			{
-				if(strcmp(placa,cadastro[i][j][k].placa) == 0)
+				if(strcmp(placa,cadastro[i][j][k].placa) == 0) 
 				{
 					*andar = i;
 					*coluna = j;
@@ -96,7 +136,7 @@ int buscar_mensalista(char placa[],Tcadastro cadastro[][10][8],int *andar,int *c
 			}
 		}
 	}
-	for(i=0;i<4;i++)
+	for(i=0;i<4;i++) // Se não achar retorna 1 e os indices da vaga mais proxima para estacionar.
 	{
 		for(j=0;j<10;j++)
 		{
@@ -117,8 +157,8 @@ int buscar_mensalista(char placa[],Tcadastro cadastro[][10][8],int *andar,int *c
 int buscar_rotativo(char placa[],Tcadastro cadastro[][10][8],int *andar,int *coluna,int *vaga)
 {
 	int i,j,k;
-
-	for(i=4;i<10;i++)
+	
+	for(i=4;i<10;i++) // se achar a placa retorna 0.
 	{
 		for(j=0;j<10;j++)
 		{
@@ -134,7 +174,7 @@ int buscar_rotativo(char placa[],Tcadastro cadastro[][10][8],int *andar,int *col
 			}
 		}
 	}
-	for(i=4;i<10;i++)
+	for(i=4;i<10;i++) // Se não achar retorna 1.
 	{
 		for(j=0;j<10;j++)
 		{
@@ -153,9 +193,11 @@ int buscar_rotativo(char placa[],Tcadastro cadastro[][10][8],int *andar,int *col
 	
 }
 
-void escrever(Tcadastro cadastro[][10][8], FILE *arq)
+void escrever(Tcadastro cadastro[][10][8], char nome_arq[20]) // Escreve todas as informações da matriz no arquivo.
 {
 	int i,j,k;
+
+	FILE *arq = fopen(nome_arq,"w");
 
 	for(i=0;i<10;i++)
 	{
@@ -174,7 +216,9 @@ void escrever(Tcadastro cadastro[][10][8], FILE *arq)
 			}
 		}
 	}
-
+	
+	fclose(arq);
+	
 }
 
 void apresentacao()
@@ -187,15 +231,16 @@ int calcular_rotativo(int dia,int mes,int ano,int hora,int minuto,int andar,int 
 {
 	int total, d_ano, d_mes, d_dias, d_hora, d_min,aux;
 	
-	d_ano = (ano - cadastro[andar][coluna][vaga].ano);
+	// Calcula a diferênça 
+	d_ano = (ano - cadastro[andar][coluna][vaga].ano); 
 	d_mes =  (mes - cadastro[andar][coluna][vaga].mes);
 	d_dias = (dia - cadastro[andar][coluna][vaga].dia);
 	d_hora = (hora - cadastro[andar][coluna][vaga].hora);
 	
 	// Calculo do tempo de permanencia
-	if(d_ano > 0)
+	if(d_ano > 0) 
 	{
-		d_mes = (d_ano - 1) * 12 + ((12 - cadastro[andar][coluna][vaga].mes) + mes);	
+		d_mes = (d_ano - 1) * 12 + ((12 - cadastro[andar][coluna][vaga].mes) + mes); 	
 		
 		d_dias = (d_mes - 1) * 30 + ((30 - cadastro[andar][coluna][vaga].dia) + dia);
 		
@@ -226,36 +271,36 @@ int calcular_rotativo(int dia,int mes,int ano,int hora,int minuto,int andar,int 
 		d_min = (minuto - cadastro[andar][coluna][vaga].minuto);
 	}
 	
-	// Calculo do pre�o de acordo com o tempo.
-	if(d_min <= 30) // at� 30 min
+	// Calculo do preço de acordo com o tempo.
+	if(d_min <= 30) // até 30 min
 	{
 		total = 4;
 	}
-	else if(d_min <= 60) // at� 1 hora
+	else if(d_min <= 60) // até 1 hora
 	{
 		total = 7;
 	}
-	else if(d_min <= 120) // at� 2 horas
+	else if(d_min <= 120) // até 2 horas
 	{
 		total = 12;
 	}
-	else if(d_min <= 240)// at� 4 horas
+	else if(d_min <= 240)// até 4 horas
 	{
 		total = 20;
 	}
-	else if(d_min <= 360)// at� 6 horas
+	else if(d_min <= 360)// até 6 horas
 	{
 		total = 30;
 	}
-	else if(d_min <= 480)// at� 8 horas
+	else if(d_min <= 480)// até 8 horas
 	{
 		total = 40;
 	}
-	else if(d_min <= 1440)// at� 24 horas
+	else if(d_min <= 1440)// até 24 horas
 	{
 		total = 75;
 	}
-	else
+	else // mais de um dia
 	{
 		aux = d_min / 1440;
 		if(d_min % 1440 != 0)
@@ -279,10 +324,7 @@ int main() {
 	char placa[15];
 	double tel;
 
-
-	FILE *arq = fopen("cadastro.txt","r");
-
-	ler_arquivo(arq,cadastro);
+	ler_arquivo("cadastro.txt",cadastro);
 	
 	apresentacao();
 
@@ -292,11 +334,11 @@ int main() {
 	{
 		if(opcao == 1) //ENTRADA
 		{
-			printf("\n	INFORME A DATA E HORA ATUAL DE ENTRADA.\n");
-			printf("\n 	DIA, MES E ANO: ");
-			scanf("%i %i %i",&dia, &mes, &ano);
-			printf("\n 	HORA E MINUTO: ");
-			scanf("%i %i", &hora, &minuto);
+			dia=ObtemDia(dia);
+			mes=ObtemMes(mes);
+			ano=ObtemAno(ano);
+			hora=ObtemHora(hora);
+			minuto=ObtemMinuto(minuto);
 			system("cls");
 			
 			apresentacao();
@@ -376,15 +418,21 @@ int main() {
 					}
 				}
 			}
+			else
+			{
+				system("cls");
+				apresentacao();
+				printf("\n 	 DIGITE UMA OPCAO VALIDA! \n");
+			}
 			
 		}
-		else // SAIDA
+		else if(opcao == 2) // SAIDA
 		{
-			printf("\n	INFORME - A DATA E HORA ATUAL DE SAIDA.\n");
-			printf("\n 	DIA, MES E ANO: ");
-			scanf("%i %i %i",&dia, &mes, &ano);
-			printf("\n 	HORA E MINUTO: ");
-			scanf("%i %i", &hora, &minuto);
+		    dia=ObtemDia(dia);
+			mes=ObtemMes(mes);
+			ano=ObtemAno(ano);
+			hora=ObtemHora(hora);
+			minuto=ObtemMinuto(minuto);
 			system("cls");
 			
 			apresentacao();
@@ -392,14 +440,14 @@ int main() {
 			printf("\n 	(1)ROTATIVO (2)MENSALISTA: ");
 			scanf("%i",&tipo);
 			
-			printf("\n 	PLACA DO CARRO:  ");
-			scanf("%s",placa);
-				
 			system("cls");
 			apresentacao();
 			
 			if(tipo == 1)
 			{	
+				printf("\n 	PLACA DO CARRO:  ");
+				scanf("%s",placa);
+				
 				res = buscar_rotativo(placa,cadastro,&andar,&coluna,&vaga);
 				if(res == 0)
 				{
@@ -420,6 +468,9 @@ int main() {
 			}
 			else if(tipo == 2)
 			{
+				printf("\n 	PLACA DO CARRO:  ");
+				scanf("%s",placa);
+			
 				res = buscar_mensalista(placa,cadastro,&andar,&coluna,&vaga);
 				
 				if(res == 1)
@@ -449,21 +500,27 @@ int main() {
 						printf("\n\n 	CARRO NAO ENCONTRADO NO ESTACIONAMENTO. TENTE NOVAMENTE!\n");
 				}	
 			}
+			else
+			{
+				system("cls");
+				apresentacao();
+				printf("\n 	 DIGITE UMA OPCAO VALIDA! \n");
+			}
+		}
+		else
+		{
+			system("cls");
+			apresentacao();
+			printf("\n 	 DIGITE UMA OPCAO VALIDA! \n");
 		}
 		printf("\n 	(1)ENTRADA (2)SAIDA (3)FINALIZAR: ");
 		scanf("%i",&opcao);
 	}
-
-	fclose(arq);	
-
-	//escrever no arquivo
-	arq = fopen("cadastro.txt","w");
-	escrever(cadastro,arq);
-	fclose(arq);
 	
-	printf("\n\n");
+	//escrever no arquivo
+	escrever(cadastro,"cadastro.txt");
+	
+	printf("\n\n	");
 	system("pause");
 	return 0;
 }
-
-
